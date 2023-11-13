@@ -16,7 +16,7 @@ from lxml import html
 
 def get_text(node):
     textnodes = node.xpath(".//text()")
-    s = ''.join([text for text in textnodes])
+    s = ''.join(list(textnodes))
     return re.sub(r'\s+', ' ', s)
 
 
@@ -34,7 +34,7 @@ def edit_distance(a, b, threshold=999999):
         return 0
     m = len(a)
     n = len(b)
-    distances = [[threshold for j in range(n + 1)] for i in range(m + 1)]
+    distances = [[threshold for _ in range(n + 1)] for _ in range(m + 1)]
     # distances is a 2-dimensional array such that distances[i][j]
     # will be equal to the edit distance of the first i characters
     # of a and the first j characters of b.
@@ -44,10 +44,7 @@ def edit_distance(a, b, threshold=999999):
         distances[0][j] = j
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            if a[i - 1] == b[j - 1]:
-                cij = 0
-            else:
-                cij = 1
+            cij = 0 if a[i - 1] == b[j - 1] else 1
             d = min(distances[i - 1][j] + 1, distances[i][j - 1] + 1,
                     distances[i - 1][j - 1] + cij)
             if d >= threshold:
@@ -103,9 +100,6 @@ for actual_line in actual_lines:
     del remaining[min_i]
     ocr_errors += min_d
 
-segmentation_errors = 0
-for s in remaining:
-    segmentation_errors += len(s)
-
+segmentation_errors = sum(len(s) for s in remaining)
 print("segmentation_errors", segmentation_errors)
 print("ocr_errors", ocr_errors)

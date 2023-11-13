@@ -25,11 +25,9 @@ pages = doc.xpath("//*[@class='ocr_page']")
 assert pages != []
 
 container = pages[0].getparent()
-index = 1
-for new_page in pages:
+for index, new_page in enumerate(pages, start=1):
     container_pages = container.xpath("//*[@class='ocr_page']")
     for page in container_pages:
         container.remove(page)
     container.append(new_page)
     doc.write((args.pattern % index), pretty_print=True)
-    index += 1

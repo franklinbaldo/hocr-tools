@@ -51,7 +51,7 @@ Environment Variables:
     output_format=png: format for line image files
 """
 
-if len(sys.argv) > 1 and (sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
     sys.stderr.write(usage)
     sys.exit(0)
 
@@ -70,7 +70,7 @@ else:
     image_list = glob.glob(image_pattern)
 
 if not os.path.exists(hocr):
-    sys.stderr.write(hocr + ": not found")
+    sys.stderr.write(f"{hocr}: not found")
     sys.exit(1)
 
 element = os.getenv("element", "ocr_line")
@@ -84,12 +84,9 @@ pad = int(os.getenv("pad", "2"))
 output_format = os.getenv("output_format", "png")
 
 if dictfile:
-    stream = open(dictfile, "r")
-    words = stream.read().split()
-    stream.close()
-    dict = {}
-    for word in words:
-        dict[word.lower()] = 1
+    with open(dictfile, "r") as stream:
+        words = stream.read().split()
+    dict = {word.lower(): 1 for word in words}
     # print "[read %d words from %s]\n"%(len(words),dictfile)
 
 
@@ -106,9 +103,8 @@ def check_dict(dict, s):
 
 
 def write_string(file, text):
-    stream = open(file, "w")
-    stream.write(text.encode("utf-8"))
-    stream.close()
+    with open(file, "w") as stream:
+        stream.write(text.encode("utf-8"))
 
 
 def get_prop(title, name):
@@ -153,9 +149,9 @@ class docHandler(xml.sax.handler.ContentHandler):
     def endElement(self, name):
         if self.depth == self.start:
             if len(self.text) >= min_len and \
-                    len(self.text) <= max_len and \
-                    re.match(self.regex, self.text) and \
-                    check_dict(dict, self.text):
+                        len(self.text) <= max_len and \
+                        re.match(self.regex, self.text) and \
+                        check_dict(dict, self.text):
                 print(self.page, self.bbox, self.text.encode("utf-8"))
                 w, h = self.image.size
                 x0, y0, x1, y1 = [int(s) for s in self.bbox.split()]
@@ -169,9 +165,9 @@ class docHandler(xml.sax.handler.ContentHandler):
                 basedir = os.path.dirname(base)
                 if not os.path.exists(basedir):
                     os.mkdir(basedir)
-                limage.save(base + "." + output_format)
-                write_string(base + ".txt", self.text)
-                write_string(base + ".bbox", self.bbox)
+                limage.save(f"{base}.{output_format}")
+                write_string(f"{base}.txt", self.text)
+                write_string(f"{base}.bbox", self.bbox)
                 self.total += 1
                 if self.total >= max_lines:
                     sys.exit(0)
@@ -185,6 +181,7 @@ class docHandler(xml.sax.handler.ContentHandler):
 
 
 parser = xml.sax.make_parser()
-stream = os.popen("tidy -q -wrap 9999 -asxhtml < %s 2> /tmp/tidy_errs" % hocr,
-                  "r")
+stream = os.popen(
+    f"tidy -q -wrap 9999 -asxhtml < {hocr} 2> /tmp/tidy_errs", "r"
+)
 parser.parseFile(stream, docHandler())

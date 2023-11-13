@@ -23,9 +23,7 @@ def get_prop(node, name):
 
 def get_bbox(node):
     bbox = get_prop(node, 'bbox')
-    if not bbox:
-        return None
-    return tuple([int(x) for x in bbox.split()])
+    return None if not bbox else tuple(int(x) for x in bbox.split())
 
 
 parser = argparse.ArgumentParser(
@@ -89,7 +87,7 @@ for page in pages:
     middle = int((middle_left + middle_right) / 2)
     print("Cutting at", middle)
 
-    if (image_found):
+    if image_found:
 
         if filename[-4] == ".":
             name = filename[:-3]
@@ -98,7 +96,7 @@ for page in pages:
             name = filename
             suffix = ""
 
-        if (args.debug):
+        if args.debug:
             dr.line(
                 (middle_left, 0, middle_left, debug_image.size[1]),
                 fill=64,
@@ -109,15 +107,15 @@ for page in pages:
                 width=3)
             dr.line(
                 (middle, 0, middle, debug_image.size[1]), fill=128, width=5)
-            debug_output = name + "cut." + suffix
+            debug_output = f"{name}cut.{suffix}"
             debug_image.save(debug_output)
             print("debug output is saved in", debug_output)
 
         left = image.crop((0, 0, middle, image.size[1]))
-        left_name = name + "left." + suffix
+        left_name = f"{name}left.{suffix}"
         left.save(left_name)
         print("left page is saved in", left_name)
         right = image.crop((middle, 0, image.size[0], image.size[1]))
-        right_name = name + "right." + suffix
+        right_name = f"{name}right.{suffix}"
         right.save(right_name)
         print("right page is saved in", right_name)
