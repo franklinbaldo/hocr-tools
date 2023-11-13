@@ -14,7 +14,7 @@ from lxml import html
 
 def get_text(node):
     textnodes = node.xpath(".//text()")
-    s = ''.join([text for text in textnodes])
+    s = ''.join(list(textnodes))
     return re.sub(r'\s+', ' ', s)
 
 
@@ -32,18 +32,14 @@ def get_prop(node, name):
 
 def get_bbox(node):
     bbox = get_prop(node, 'bbox')
-    if not bbox:
-        return None
-    return tuple([int(x) for x in bbox.split()])
+    return None if not bbox else tuple(int(x) for x in bbox.split())
 
 
 # rectangle properties
 
 
 def intersect(u, v):
-    # intersection of two rectangles
-    r = (max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3]))
-    return r
+    return max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3])
 
 
 def area(u):
@@ -123,7 +119,7 @@ def boxstats(truths, actuals):
         if len([o for o in oas if o > args.significant_overlap]) > 1:
             multiple += 1
         matching = [o for o in oas if o > args.close_match]
-        if len(matching) < 1:
+        if not matching:
             missing += 1
         elif len(matching) > 1:
             raise AttributeError(
@@ -143,8 +139,8 @@ def check_bad_partition(boxes):
 
 
 for truth, actual in pages:
-    tobjs = truth.xpath("//*[@class='%s']" % args.element)
-    aobjs = actual.xpath("//*[@class='%s']" % args.element)
+    tobjs = truth.xpath(f"//*[@class='{args.element}']")
+    aobjs = actual.xpath(f"//*[@class='{args.element}']")
     tboxes = [get_bbox(n) for n in tobjs]
     if check_bad_partition(tboxes):
         raise ValueError("Ground truth data is not an acceptable segmentation")

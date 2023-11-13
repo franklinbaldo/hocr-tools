@@ -15,7 +15,7 @@ dcknown = [
 
 def get_text(node):
     textnodes = node.xpath(".//text()")
-    s = "".join([text for text in textnodes])
+    s = "".join(list(textnodes))
     return re.sub(r'\s+', ' ', s)
 
 

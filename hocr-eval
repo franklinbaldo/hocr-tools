@@ -32,14 +32,12 @@ def get_prop(node, name):
 
 def get_bbox(node):
     bbox = get_prop(node, 'bbox')
-    if not bbox:
-        return None
-    return tuple([int(x) for x in bbox.split()])
+    return None if not bbox else tuple(int(x) for x in bbox.split())
 
 
 def get_text(node):
     textnodes = node.xpath(".//text()")
-    s = "".join([text for text in textnodes])
+    s = "".join(list(textnodes))
     return re.sub(r'\s+', ' ', s)
 
 
@@ -47,9 +45,7 @@ def get_text(node):
 
 
 def intersect(u, v):
-    # intersection of two rectangles
-    r = (max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3]))
-    return r
+    return max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3])
 
 
 def width(u):
@@ -70,7 +66,7 @@ def area(u):
 def erode(u, tx, ty):
     x = 2 * tx + 1
     y = 2 * ty + 1
-    return tuple([u[0] + x, u[1] + y, u[2] - x, u[3] - y])
+    return u[0] + x, u[1] + y, u[2] - x, u[3] - y
 
 
 # text comparison
@@ -92,7 +88,7 @@ def edit_distance(a, b, threshold=99999):
         return 0
     m = len(a)
     n = len(b)
-    distances = [[threshold for j in range(n + 1)] for i in range(m + 1)]
+    distances = [[threshold for _ in range(n + 1)] for _ in range(m + 1)]
     # distances is a 2-dimensional array such that distances[i][j]
     # will be equal to the edit distance of the first i characters
     # of a and the first j characters of b.
@@ -102,10 +98,7 @@ def edit_distance(a, b, threshold=99999):
         distances[0][j] = j
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            if a[i - 1] == b[j - 1]:
-                cij = 0
-            else:
-                cij = 1
+            cij = 0 if a[i - 1] == b[j - 1] else 1
             d = min(distances[i - 1][j] + 1, distances[i][j - 1] + 1,
                     distances[i - 1][j - 1] + cij)
             if d >= threshold:
@@ -211,13 +204,13 @@ for truth, actual in pages:
                 print("\t", get_text(true_line))
             segmentation_errors += 1
 
-            if candidates != []:
+            if not candidates:
+                segmentation_ocr_errors += len(get_text(true_line))
+
+            else:
                 true_text = remove_tex(get_text(true_line))
                 segmentation_ocr_errors += edit_distance(
                     normalize(true_text), normalize(actual_line))
-            else:
-                segmentation_ocr_errors += len(get_text(true_line))
-
             if (args.imgfile):
                 draw.rectangle(bbox, outline="#ff0000")
                 if candidates != []:

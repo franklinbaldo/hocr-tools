@@ -14,7 +14,7 @@ setup(
     maintainer_email='konstantin.baierer@gmail.com',
     url='https://github.com/tmbdev/hocr-tools',
     download_url='https://github.com/tmbdev/hocr-tools/tarball/v'
-                 + __version__,
+    + __version__,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -31,5 +31,5 @@ setup(
         'lxml',
         'reportlab',
     ],
-    scripts=[c for c in glob.glob("hocr-*")]
+    scripts=list(glob.glob("hocr-*")),
 )

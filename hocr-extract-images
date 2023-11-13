@@ -16,7 +16,7 @@ from PIL import Image
 
 def get_text(node):
     textnodes = node.xpath('.//text()')
-    s = ''.join([text for text in textnodes])
+    s = ''.join(list(textnodes))
     return re.sub(r'\s+', ' ', s)
 
 
@@ -66,14 +66,14 @@ args = parser.parse_args()
 
 padding = None
 if args.pad is not None:
-    padding = eval("["+args.pad+"]")
-    assert len(padding) in [1, 4], (args.pad, padding)
+    padding = eval(f"[{args.pad}]")
+    assert len(padding) in {1, 4}, (args.pad, padding)
     if len(padding) == 1:
         padding = padding * 4
 
-tpattern = args.pattern + '.txt'
+tpattern = f'{args.pattern}.txt'
 if args.pattern[-4] == '.':
-    tpattern = args.pattern[:-3] + 'txt'
+    tpattern = f'{args.pattern[:-3]}txt'
 
 if args.unicodedammit:
     from bs4 import UnicodeDammit
@@ -95,7 +95,7 @@ for page in pages:
         print("not found:", iname)
         sys.exit(1)
     image = Image.open(iname)
-    lines = page.xpath("//*[@class='%s']" % args.element)
+    lines = page.xpath(f"//*[@class='{args.element}']")
     lcount = 1
     for line in lines:
         bbox = [int(x) for x in get_prop(line, 'bbox').split()]

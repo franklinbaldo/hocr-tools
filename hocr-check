@@ -20,7 +20,7 @@ def test_ok(v, msg):
     TEST_COUNTER += 1
     if not v:
         sys.stderr.write("not ")
-    sys.stderr.write("ok " + str(TEST_COUNTER) + " - " + msg + "\n")
+    sys.stderr.write(f"ok {TEST_COUNTER} - {msg}" + "\n")
 
 
 # node properties
@@ -40,18 +40,14 @@ def get_prop(node, name):
 
 def get_bbox(node):
     bbox = get_prop(node, 'bbox')
-    if not bbox:
-        return None
-    return tuple([int(x) for x in bbox.split()])
+    return None if not bbox else tuple(int(x) for x in bbox.split())
 
 
 # rectangle properties
 
 
 def intersect(u, v):
-    # intersection of two rectangles
-    r = (max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3]))
-    return r
+    return max(u[0], v[0]), max(u[1], v[1]), min(u[2], v[2]), min(u[3], v[3])
 
 
 def area(u):
